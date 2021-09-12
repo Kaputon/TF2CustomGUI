@@ -2,9 +2,6 @@ import keyboard
 import time
 import tkinter as tk
 
-begin = 0
-end = 0
-
 console_list = []
 status_list = [[], []]
 plrL = []
@@ -12,6 +9,7 @@ plrL = []
 current_players = status_list[0]
 prev_players = status_list[1]
 
+# Weapon dict to formal name.
 keyword_dict = {
                     "sniperrifle." : "Sniper Rifle",
                     "blackbox" : "The Black Box",
@@ -94,7 +92,7 @@ def parse(line):
 def tf_gamestate():
     console_file = 'C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\console.log'
     console = open(console_file, 'rb')
-
+    #### Setup TKinter GUI
     frame = tk.Frame(master=window, relief=tk.SUNKEN, borderwidth=5)
     frame2 = tk.Frame(master=window, relief=tk.GROOVE, borderwidth=5)
     frame.grid(row=0, column=0)
@@ -107,35 +105,37 @@ def tf_gamestate():
     for lab in range(10):
         label = tk.Label(master=frame2, text=f"", relief=tk.GROOVE, borderwidth=2)
         label.pack(fill=tk.BOTH)
+    ####
 
     begin = time.time()
     end = time.time()
+
     while True:
+        # If 10 seconds have passed, press HOME button to trigger "status" bind in TF2
         if abs(begin - end) > 10:
             keyboard.send("f10")
             begin = end
 
-        if len(console_list) > 20:
-            excess = len(console_list) - 20
-            for i in range(excess):
-                console_list.pop(i)
-
+        # Hand 20 console lines to the parse function
         lines = console.readlines()[-20:]
         for line in lines:
             parse(str(line)[2:-5])  # remember [2:]
 
+        # Set the current leaderboard to previous
         prev_players = current_players
 
+        # If there are players, begin filling the GUI with their name and steamID.
         if len(status_list) > 0:
             plr = 0
             for wid in frame.winfo_children():
                 try:
-                    wid.config(text=f"{plr + 1}. {prev_players[plr]}")
+                    wid.config(text=f"{plr + 1}. '{prev_players[plr][0]}' ; {prev_players[plr][1]} ")
                     plr += 1
                 except:
                     pass
             current_players.clear()
 
+        # If console messages exist, fill the GUI with them.
         if len(console_list) > 0:
             con = 0
             for wid in frame2.winfo_children():
@@ -148,7 +148,7 @@ def tf_gamestate():
         window.update()
         end = time.time()
 
-    # console.close()
+    #console.close()
 
 
 window = tk.Tk()
